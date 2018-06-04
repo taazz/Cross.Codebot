@@ -314,14 +314,21 @@ type
   published
     property Align;
     property Anchors;
+    property BorderSpacing;
     property BorderStyle;
     property Color;
+    property Constraints;
+    property Cursor;
     property DesktopFont;
     property DragKind;
     property DragCursor;
     property DragMode;
     property Enabled;
     property Font;
+    property Left;
+    property Top;
+    property Height;
+    property Width;
     property HotTrack;
     property ItemHeight;
     property MultiSelect;
@@ -330,6 +337,8 @@ type
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
+    property ShowHint;
+    property Hint;
     property TabOrder;
     property TabStop;
     property Visible;
@@ -343,6 +352,11 @@ type
     property OnDrawItem;
     property OnEndDock;
     property OnEndDrag;
+    property OnEnter;
+    property OnExit;
+    property OnKeyDown;
+    property OnKeyPress;
+    property OnKeyUp;
     property OnMouseDown;
     property OnMouseMove;
     property OnMouseUp;
@@ -1046,17 +1060,16 @@ begin
     LCLIntf.ScreenToClient(Handle, Point);
     ScrollDir := sdNone;
     Distance := 0;
-    with Point do
-      if Y < 0 then
-      begin
-        Distance := -Y div FItemHeight + 1;
-        ScrollDir := sdUp;
-      end
-      else if Y > ClientHeight then
-      begin
-        Distance :=  (Y - ClientHeight) div FItemHeight + 1;
-        ScrollDir := sdDown;
-      end;
+    if Point.Y < 0 then
+    begin
+      Distance := -Point.Y div FItemHeight + 1;
+      ScrollDir := sdUp;
+    end
+    else if Point.Y > ClientHeight then
+    begin
+      Distance :=  (Point.Y - ClientHeight) div FItemHeight + 1;
+      ScrollDir := sdDown;
+    end;
     if ScrollDir = sdUp then
       ScrollMove(Distance, ScrollDir)
     else if ScrollDir = sdDown then
@@ -1111,6 +1124,8 @@ end;
 procedure TScrollList.WMKillFocus(var Message: TLMKillFocus);
 begin
   inherited;
+  FMouseCapture := False;
+  FDownIndex := -1;
   Invalidate;
 end;
 
@@ -1137,9 +1152,12 @@ begin
 end;
 
 procedure TScrollList.KeyDown(var Key: Word; Shift: TShiftState);
+var
+  Wanted: Boolean;
 begin
   inherited KeyDown(Key, Shift);
   FShift := Shift;
+  Wanted := True;
   case Key of
     VK_HOME: ItemIndex := 0;
     VK_END: ItemIndex := Count - 1;
@@ -1147,7 +1165,11 @@ begin
     VK_PRIOR: SetScrollIndex(ItemIndex - (ClientHeight - FHeaderSize) div FItemHeight);
     VK_UP: SetScrollIndex(ItemIndex - 1);
     VK_DOWN: SetScrollIndex(ItemIndex + 1);
+  else
+    Wanted := False;
   end;
+  if Wanted then
+    Key := 0;
   InsureItemVisible;
 end;
 

@@ -1,6 +1,6 @@
-  program hilite;
+program ftpclient;
 
-{$mode delphi}
+{$mode objfpc}{$H+}
 
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
@@ -14,8 +14,9 @@ uses
 
 begin
   RequireDerivedFormResource := True;
+  Application.Scaled := True;
   Application.Initialize;
-  Application.CreateForm(THighlightForm, HighlightForm);
+  Application.CreateForm(TClientForm, ClientForm);
   Application.Run;
 end.
 
